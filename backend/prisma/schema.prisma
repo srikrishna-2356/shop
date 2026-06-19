@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  auditLogs AuditLog[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+  gstin     String?
+  address   String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  estimates Estimate[]
+  invoices  Invoice[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  sku         String?  @unique
+  category    String
+  unit        String   // piece, sqft, kg, box
+  price       Float
+  gstPercent  Float    @default(0)
+  stock       Float    @default(0)
+  images      String[] // Cloudinary URLs
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  estimateItems EstimateItem[]
+  invoiceItems  InvoiceItem[]
+}
+
+model Estimate {
+  id          String   @id @default(uuid())
+  estimateNo  Int      @unique @default(autoincrement())
+  date        DateTime @default(now())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  
+  subTotal    Float
+  taxTotal    Float
+  discount    Float    @default(0)
+  grandTotal  Float
+  
+  status      EstimateStatus @default(DRAFT)
+  notes       String?
+  
+  items       EstimateItem[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoice     Invoice? // Optional 1-to-1 if converted
+}
+
+enum EstimateStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  CONVERTED
+  REJECTED
+}
+
+model EstimateItem {
+  id          String   @id @default(uuid())
+  estimateId  String
+  estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  quantity    Float
+  pricePerUnit Float
+  gstPercent  Float
+  discountPercent Float @default(0)
+  amount      Float
+}
+
+model Invoice {
+  id          String   @id @default(uuid())
+  invoiceNo   Int      @unique @default(autoincrement())
+  date        DateTime @default(now())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  
+  estimateId  String?  @unique
+  estimate    Estimate? @relation(fields: [estimateId], references: [id])
+  
+  subTotal    Float
+  taxTotal    Float
+  discount    Float    @default(0)
+  grandTotal  Float
+  
+  status      InvoiceStatus @default(UNPAID)
+  notes       String?
+  
+  items       InvoiceItem[]
+  eWayBill    EWayBill?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  quantity    Float
+  pricePerUnit Float
+  gstPercent  Float
+  discountPercent Float @default(0)
+  amount      Float
+}
+
+model EWayBill {
+  id              String   @id @default(uuid())
+  eWayBillNo      String   @unique
+  invoiceId       String   @unique
+  invoice         Invoice  @relation(fields: [invoiceId], references: [id])
+  
+  vehicleNumber   String
+  distance        Float
+  transporterName String?
+  transporterId   String?
+  deliveryAddress String
+  weight          Float
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      String
+  entity      String
+  entityId    String
+  details     Json?
+  createdAt   DateTime @default(now())
+}
