@@ -202,11 +202,7 @@ export default function InvoiceForm() {
 
   async function downloadPDF() {
     const el = document.getElementById("gst-invoice-preview");
-    if (!el) {
-      setShowPreview(true);
-      setTimeout(downloadPDF, 300);
-      return;
-    }
+    if (!el) return;
     const canvas = await html2canvas(el, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -217,12 +213,7 @@ export default function InvoiceForm() {
   }
 
   function handlePrint() {
-    if (!showPreview) {
-      setShowPreview(true);
-      setTimeout(() => window.print(), 300);
-    } else {
-      window.print();
-    }
+    window.print();
   }
 
   function shareWhatsApp() {
@@ -461,13 +452,11 @@ export default function InvoiceForm() {
         </div>
       </div>
 
-      {showPreview && (
-        <div className="lg:col-span-5 overflow-x-auto animate-fade-in print:block print-only print:m-0 print:p-0">
-          <div className="min-w-[700px]">
-            <GSTInvoicePreview items={items} customer={customer} invoiceNo={invoiceNo} date={date} isInterState={isInterState} bankDetails={bankDetails} />
-          </div>
+      <div className={`lg:col-span-5 overflow-x-auto print:block print-only print:m-0 print:p-0 ${showPreview ? "animate-fade-in block" : "absolute -left-[9999px] opacity-0"}`}>
+        <div className="min-w-[700px]">
+          <GSTInvoicePreview items={items} customer={customer} invoiceNo={invoiceNo} date={date} isInterState={isInterState} bankDetails={bankDetails} />
         </div>
-      )}
+      </div>
     </div>
   );
 }

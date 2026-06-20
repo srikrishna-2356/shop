@@ -171,7 +171,7 @@ export default function EWayBillForm() {
 
   async function downloadPDF() {
     const el = document.getElementById("eway-preview");
-    if (!el) { setShowPreview(true); setTimeout(downloadPDF, 300); return; }
+    if (!el) return;
     const canvas = await html2canvas(el, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -309,13 +309,11 @@ export default function EWayBillForm() {
         </div>
       </div>
 
-      {showPreview && (
-        <div className="lg:col-span-5 overflow-x-auto animate-fade-in">
-          <div className="min-w-[700px]">
-            <EWayBillPreview form={form} items={items} />
-          </div>
+      <div className={`lg:col-span-5 overflow-x-auto print:block print-only print:m-0 print:p-0 ${showPreview ? "animate-fade-in block" : "absolute -left-[9999px] opacity-0"}`}>
+        <div className="min-w-[700px]">
+          <EWayBillPreview form={form} items={items} />
         </div>
-      )}
+      </div>
     </div>
   );
 }
