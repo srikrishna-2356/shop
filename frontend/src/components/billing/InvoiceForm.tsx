@@ -199,6 +199,11 @@ export default function InvoiceForm() {
   const fmt = (n: number) => "₹ " + n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
 
   async function downloadPDF() {
+    if (!showPreview) {
+      setShowPreview(true);
+      setTimeout(downloadPDF, 300);
+      return;
+    }
     const el = document.getElementById("gst-invoice-preview");
     if (!el) return;
     const canvas = await html2canvas(el, { scale: 2, useCORS: true });
@@ -208,6 +213,15 @@ export default function InvoiceForm() {
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`Invoice-${invoiceNo}.pdf`);
+  }
+
+  function handlePrint() {
+    if (!showPreview) {
+      setShowPreview(true);
+      setTimeout(() => window.print(), 300);
+    } else {
+      window.print();
+    }
   }
 
   function shareWhatsApp() {
@@ -221,7 +235,7 @@ export default function InvoiceForm() {
 
   return (
     <div className="grid lg:grid-cols-5 gap-6">
-      <div className="lg:col-span-3 space-y-5">
+      <div className="lg:col-span-3 space-y-5 no-print print:hidden">
         {/* Header Banner */}
         <div className="rounded-2xl gold-gradient p-4 text-white flex justify-between items-center">
           <div>
@@ -375,7 +389,7 @@ export default function InvoiceForm() {
       </div>
 
       {/* Summary */}
-      <div className="lg:col-span-2 space-y-5">
+      <div className="lg:col-span-2 space-y-5 no-print print:hidden">
         <div className="rounded-2xl p-5 border sticky top-20" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <h3 className="font-semibold text-sm mb-3">Tax Summary</h3>
           <div className="space-y-2 text-sm">
@@ -416,7 +430,7 @@ export default function InvoiceForm() {
                 <MessageCircle size={15} /> WhatsApp
               </Button>
             </div>
-            <Button variant="ghost" className="w-full gap-2" onClick={() => window.print()}>
+            <Button variant="ghost" className="w-full gap-2" onClick={handlePrint}>
               <Printer size={15} /> Print
             </Button>
           </div>
@@ -424,7 +438,7 @@ export default function InvoiceForm() {
       </div>
 
       {showPreview && (
-        <div className="lg:col-span-5 overflow-x-auto animate-fade-in">
+        <div className="lg:col-span-5 overflow-x-auto animate-fade-in print:block print-only print:m-0 print:p-0">
           <div className="min-w-[700px]">
             <GSTInvoicePreview items={items} customer={customer} invoiceNo={invoiceNo} date={date} isInterState={isInterState} />
           </div>

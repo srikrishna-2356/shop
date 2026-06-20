@@ -89,7 +89,7 @@ function InvoicePreview({
           <span className="text-xs text-gray-400 block mb-1">GENERATED ON</span>
           <div className="flex items-center gap-1 justify-end">
             <div className="w-6 h-6 rounded" style={{ background: "linear-gradient(135deg,#f5a623,#d4870a)" }} />
-            <span className="font-bold text-base text-gray-800">Vyapar</span>
+            <span className="font-bold text-base text-gray-800">Sri Krishna</span>
           </div>
         </div>
       </div>
@@ -203,6 +203,11 @@ export default function EstimateForm() {
     "₹ " + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   async function downloadPDF() {
+    if (!showPreview) {
+      setShowPreview(true);
+      setTimeout(downloadPDF, 300);
+      return;
+    }
     const el = document.getElementById("invoice-preview");
     if (!el) return;
     const canvas = await html2canvas(el, { scale: 2, useCORS: true });
@@ -212,6 +217,15 @@ export default function EstimateForm() {
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`Estimate-${estimateNo}-${customer.name || "Customer"}.pdf`);
+  }
+
+  function handlePrint() {
+    if (!showPreview) {
+      setShowPreview(true);
+      setTimeout(() => window.print(), 300);
+    } else {
+      window.print();
+    }
   }
 
   async function shareOnWhatsApp() {
@@ -231,7 +245,7 @@ export default function EstimateForm() {
   return (
     <div className="grid lg:grid-cols-5 gap-6">
       {/* ─── LEFT: FORM ─── */}
-      <div className="lg:col-span-3 space-y-5">
+      <div className="lg:col-span-3 space-y-5 no-print print:hidden">
         {/* Shop Info Banner */}
         <div className="rounded-2xl gold-gradient p-4 text-white">
           <p className="font-bold text-base" style={{ fontFamily: "'Playfair Display', serif" }}>{SHOP.name}</p>
@@ -365,7 +379,7 @@ export default function EstimateForm() {
       </div>
 
       {/* ─── RIGHT: SUMMARY + PREVIEW ─── */}
-      <div className="lg:col-span-2 space-y-5">
+      <div className="lg:col-span-2 space-y-5 no-print print:hidden">
         {/* Totals */}
         <div className="rounded-2xl p-5 border space-y-3 sticky top-20" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <h3 className="font-semibold text-sm mb-2">Pricing Summary</h3>
@@ -399,7 +413,7 @@ export default function EstimateForm() {
                 <MessageCircle size={15} /> WhatsApp
               </Button>
             </div>
-            <Button variant="ghost" className="w-full gap-2" onClick={() => window.print()}>
+            <Button variant="ghost" className="w-full gap-2" onClick={handlePrint}>
               <Printer size={15} /> Print
             </Button>
           </div>
@@ -417,7 +431,7 @@ export default function EstimateForm() {
 
       {/* ─── PREVIEW PANEL (Full Width) ─── */}
       {showPreview && (
-        <div className="lg:col-span-5 overflow-x-auto animate-fade-in">
+        <div className="lg:col-span-5 overflow-x-auto animate-fade-in print:block print-only print:m-0 print:p-0">
           <div className="min-w-[640px]" ref={previewRef}>
             <InvoicePreview
               items={items}

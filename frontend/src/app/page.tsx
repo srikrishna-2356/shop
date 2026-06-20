@@ -25,7 +25,7 @@ const categories = [
 ];
 
 const features = [
-  { icon: <FileText size={24} />, title: "Estimate Generation", desc: "Create professional Vyapar-style estimates instantly with GST breakdowns" },
+  { icon: <FileText size={24} />, title: "Estimate Generation", desc: "Create professional estimates instantly with GST breakdowns" },
   { icon: <BarChart3 size={24} />, title: "GST Billing", desc: "CGST/SGST/IGST split invoices with QR code payment & PDF export" },
   { icon: <Package size={24} />, title: "Inventory Control", desc: "Track stock with low-stock alerts and category management" },
   { icon: <Users size={24} />, title: "Customer Ledger", desc: "Full customer history, pending payments, and due reminders" },
@@ -226,7 +226,7 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <Badge className="mb-3 bg-[hsl(var(--secondary))] text-gold border-[hsl(var(--gold)/0.3)]">Platform Features</Badge>
             <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Vyapar-Inspired Billing
+              Professional Billing
             </h2>
             <p className="text-[hsl(var(--muted-foreground))]">Everything you need to run your interior business professionally</p>
           </div>
