@@ -25,7 +25,7 @@ export default function BillingPage() {
     <div className="min-h-screen" style={{ background: "hsl(var(--background))", fontFamily: "'Inter', sans-serif" }}>
       {/* ─── TOP BAR ─── */}
       <header
-        className="sticky top-0 z-40 border-b"
+        className="sticky top-0 z-40 border-b no-print print:hidden"
         style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
@@ -94,7 +94,7 @@ export default function BillingPage() {
       </header>
 
       {/* ─── CONTENT ─── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 print:m-0 print:p-0">
         {activeTab === "estimate" && <EstimateForm />}
         {activeTab === "invoice" && <InvoiceForm />}
         {activeTab === "eway" && <EWayBillForm />}
