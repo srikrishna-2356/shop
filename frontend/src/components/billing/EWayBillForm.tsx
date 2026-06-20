@@ -33,7 +33,7 @@ const defaultHsnItem = (): HsnItem => ({
   taxRate: "18",
 });
 
-const UNITS = ["Sqf", "Unit", "Kg", "Box", "Meter", "Roll", "Pair", "Set"];
+const UNITS = ["Sqf", "Rf", "Unit", "Kg", "Box", "Meter", "Roll", "Pair", "Set"];
 
 function EWayBillPreview({ form, items }: { form: any; items: HsnItem[] }) {
   const totalTaxable = items.reduce((s, it) => s + (parseFloat(it.taxableValue) || 0), 0);

@@ -41,7 +41,7 @@ const defaultItem = (): LineItem => ({
   discountPercent: "0",
 });
 
-const UNITS = ["Sqf", "Unit", "Kg", "Box", "Meter", "Roll", "Pair", "Set"];
+const UNITS = ["Sqf", "Rf", "Unit", "Kg", "Box", "Meter", "Roll", "Pair", "Set"];
 const GST_OPTIONS = ["0", "5", "12", "18", "28"];
 
 function calcItem(item: LineItem) {
@@ -70,6 +70,7 @@ function InvoicePreview({
   estimateNo: string;
   date: string;
   type: "Estimate" | "Invoice";
+  bankDetails: typeof SHOP.bank;
 }) {
   const subTotal = items.reduce((s, it) => s + calcItem(it).taxable, 0);
   const taxTotal = items.reduce((s, it) => s + calcItem(it).taxAmt, 0);
@@ -161,10 +162,10 @@ function InvoicePreview({
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-gray-200 rounded-lg p-4">
           <p className="font-semibold text-xs text-gray-700 mb-2">Bank Details</p>
-          <p className="text-xs text-gray-600">{SHOP.bank.bankName}</p>
-          <p className="text-xs text-gray-600">{SHOP.bank.accountName}</p>
-          <p className="text-xs text-gray-600">Account No: {SHOP.bank.accountNo}</p>
-          <p className="text-xs text-gray-600">IFSC Code: {SHOP.bank.ifsc}</p>
+          <p className="text-xs text-gray-600">{bankDetails.bankName}</p>
+          <p className="text-xs text-gray-600">{bankDetails.accountName}</p>
+          <p className="text-xs text-gray-600">Account No: {bankDetails.accountNo}</p>
+          <p className="text-xs text-gray-600">IFSC Code: {bankDetails.ifsc}</p>
         </div>
         <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center">
           <div className="w-24 h-12 border border-gray-200 rounded mb-2 flex items-center justify-center text-gray-400 text-xs">
@@ -188,6 +189,7 @@ export default function EstimateForm() {
   const [date, setDate] = useState(new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }));
   const [notes, setNotes] = useState(SHOP.terms);
   const [showPreview, setShowPreview] = useState(false);
+  const [bankDetails, setBankDetails] = useState(SHOP.bank);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const addItem = () => setItems((prev) => [...prev, defaultItem()]);
@@ -203,13 +205,12 @@ export default function EstimateForm() {
     "₹ " + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   async function downloadPDF() {
-    if (!showPreview) {
+    const el = document.getElementById("invoice-preview");
+    if (!el) {
       setShowPreview(true);
       setTimeout(downloadPDF, 300);
       return;
     }
-    const el = document.getElementById("invoice-preview");
-    if (!el) return;
     const canvas = await html2canvas(el, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -376,6 +377,29 @@ export default function EstimateForm() {
           <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-2">Terms & Conditions</label>
           <textarea className={`${inputCls} resize-none`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
+
+        {/* Bank Details Input */}
+        <div className="rounded-2xl p-5 border space-y-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <h3 className="font-semibold text-sm">Bank Details</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">Bank Name</label>
+              <input className={inputCls} value={bankDetails.bankName} onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">Account Name</label>
+              <input className={inputCls} value={bankDetails.accountName} onChange={(e) => setBankDetails({ ...bankDetails, accountName: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">Account No</label>
+              <input className={inputCls} value={bankDetails.accountNo} onChange={(e) => setBankDetails({ ...bankDetails, accountNo: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">IFSC Code</label>
+              <input className={inputCls} value={bankDetails.ifsc} onChange={(e) => setBankDetails({ ...bankDetails, ifsc: e.target.value })} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ─── RIGHT: SUMMARY + PREVIEW ─── */}
@@ -422,10 +446,10 @@ export default function EstimateForm() {
         {/* Bank Details card */}
         <div className="rounded-2xl p-4 border text-sm" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <p className="font-semibold text-xs text-[hsl(var(--muted-foreground))] mb-2">BANK DETAILS</p>
-          <p className="font-medium">{SHOP.bank.bankName}</p>
-          <p className="text-[hsl(var(--muted-foreground))] text-xs">{SHOP.bank.accountName}</p>
-          <p className="text-[hsl(var(--muted-foreground))] text-xs">A/C: {SHOP.bank.accountNo}</p>
-          <p className="text-[hsl(var(--muted-foreground))] text-xs">IFSC: {SHOP.bank.ifsc}</p>
+          <p className="font-medium">{bankDetails.bankName}</p>
+          <p className="text-[hsl(var(--muted-foreground))] text-xs">{bankDetails.accountName}</p>
+          <p className="text-[hsl(var(--muted-foreground))] text-xs">A/C: {bankDetails.accountNo}</p>
+          <p className="text-[hsl(var(--muted-foreground))] text-xs">IFSC: {bankDetails.ifsc}</p>
         </div>
       </div>
 
@@ -439,6 +463,7 @@ export default function EstimateForm() {
               estimateNo={estimateNo}
               date={date}
               type="Estimate"
+              bankDetails={bankDetails}
             />
           </div>
         </div>

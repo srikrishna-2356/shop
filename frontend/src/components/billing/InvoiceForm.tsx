@@ -40,7 +40,7 @@ const defaultItem = (): InvoiceItem => ({
   discountPercent: "0",
 });
 
-const UNITS = ["Sqf", "Unit", "Kg", "Box", "Meter", "Roll", "Pair", "Set"];
+const UNITS = ["Sqf", "Rf", "Unit", "Kg", "Box", "Meter", "Roll", "Pair", "Set"];
 const GST_OPTIONS = ["0", "5", "12", "18", "28"];
 
 function calcItem(item: InvoiceItem) {
@@ -58,12 +58,13 @@ function calcItem(item: InvoiceItem) {
   return { base, discAmt, taxable, cgst, sgst, igst, total };
 }
 
-function GSTInvoicePreview({ items, customer, invoiceNo, date, isInterState }: {
+function GSTInvoicePreview({ items, customer, invoiceNo, date, isInterState, bankDetails }: {
   items: InvoiceItem[];
   customer: { name: string; address: string; gstin: string; phone: string };
   invoiceNo: string;
   date: string;
   isInterState: boolean;
+  bankDetails: typeof SHOP.bank;
 }) {
   const subTotal = items.reduce((s, it) => s + calcItem(it).taxable, 0);
   const cgstTotal = items.reduce((s, it) => s + calcItem(it).cgst, 0);
@@ -160,9 +161,9 @@ function GSTInvoicePreview({ items, customer, invoiceNo, date, isInterState }: {
         <div className="p-4 border-t border-gray-300 grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs font-bold text-gray-500 uppercase mb-1">Bank Details</p>
-            <p className="text-xs text-gray-700">{SHOP.bank.bankName}</p>
-            <p className="text-xs text-gray-700">A/C: {SHOP.bank.accountNo}</p>
-            <p className="text-xs text-gray-700">IFSC: {SHOP.bank.ifsc}</p>
+            <p className="text-xs text-gray-700">{bankDetails.bankName}</p>
+            <p className="text-xs text-gray-700">A/C: {bankDetails.accountNo}</p>
+            <p className="text-xs text-gray-700">IFSC: {bankDetails.ifsc}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-500 mb-6">For {SHOP.name}</p>
@@ -185,6 +186,7 @@ export default function InvoiceForm() {
   const [date, setDate] = useState(new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }));
   const [isInterState, setIsInterState] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [bankDetails, setBankDetails] = useState(SHOP.bank);
 
   const addItem = () => setItems((prev) => [...prev, defaultItem()]);
   const removeItem = (id: number) => setItems((prev) => prev.filter((it) => it.id !== id));
@@ -199,13 +201,12 @@ export default function InvoiceForm() {
   const fmt = (n: number) => "₹ " + n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
 
   async function downloadPDF() {
-    if (!showPreview) {
+    const el = document.getElementById("gst-invoice-preview");
+    if (!el) {
       setShowPreview(true);
       setTimeout(downloadPDF, 300);
       return;
     }
-    const el = document.getElementById("gst-invoice-preview");
-    if (!el) return;
     const canvas = await html2canvas(el, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -386,6 +387,29 @@ export default function InvoiceForm() {
             })}
           </div>
         </div>
+
+        {/* Bank Details Input */}
+        <div className="rounded-2xl p-5 border space-y-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <h3 className="font-semibold text-sm">Bank Details</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">Bank Name</label>
+              <input className={inputCls} value={bankDetails.bankName} onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">Account Name</label>
+              <input className={inputCls} value={bankDetails.accountName} onChange={(e) => setBankDetails({ ...bankDetails, accountName: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">Account No</label>
+              <input className={inputCls} value={bankDetails.accountNo} onChange={(e) => setBankDetails({ ...bankDetails, accountNo: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] block mb-1">IFSC Code</label>
+              <input className={inputCls} value={bankDetails.ifsc} onChange={(e) => setBankDetails({ ...bankDetails, ifsc: e.target.value })} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Summary */}
@@ -440,7 +464,7 @@ export default function InvoiceForm() {
       {showPreview && (
         <div className="lg:col-span-5 overflow-x-auto animate-fade-in print:block print-only print:m-0 print:p-0">
           <div className="min-w-[700px]">
-            <GSTInvoicePreview items={items} customer={customer} invoiceNo={invoiceNo} date={date} isInterState={isInterState} />
+            <GSTInvoicePreview items={items} customer={customer} invoiceNo={invoiceNo} date={date} isInterState={isInterState} bankDetails={bankDetails} />
           </div>
         </div>
       )}
