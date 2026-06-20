@@ -169,17 +169,7 @@ export default function EWayBillForm() {
     return s + (v * r) / 100;
   }, 0);
 
-  async function downloadPDF() {
-    const el = document.getElementById("eway-preview");
-    if (!el) return;
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`EWayBill-${form.eWayBillNo || "draft"}.pdf`);
-  }
+
 
   function downloadJSON() {
     const data = { ...form, items, totalTaxable, totalTax, grandTotal: totalTaxable + totalTax };
@@ -296,9 +286,7 @@ export default function EWayBillForm() {
             <Button className="w-full gold-gradient text-white font-semibold gap-2" onClick={() => setShowPreview(!showPreview)}>
               <Truck size={16} /> {showPreview ? "Hide Preview" : "Preview E-Way Bill"}
             </Button>
-            <Button variant="outline" className="w-full gap-2 border-[hsl(var(--gold)/0.5)] text-gold hover:bg-[hsl(var(--secondary))]" onClick={downloadPDF}>
-              <Download size={15} /> Download PDF
-            </Button>
+
             <Button variant="outline" className="w-full gap-2" onClick={downloadJSON}>
               <FileJson size={15} /> Export JSON
             </Button>
@@ -309,7 +297,7 @@ export default function EWayBillForm() {
         </div>
       </div>
 
-      <div className={`lg:col-span-5 overflow-x-auto print:block print-only print:m-0 print:p-0 ${showPreview ? "animate-fade-in block" : "absolute -left-[9999px] opacity-0"}`}>
+      <div className={`lg:col-span-5 overflow-x-auto print:block print-only print:m-0 print:p-0 print:opacity-100 print:static ${showPreview ? "animate-fade-in block" : "absolute -left-[9999px] opacity-0"}`}>
         <div className="min-w-[700px]">
           <EWayBillPreview form={form} items={items} />
         </div>

@@ -200,17 +200,7 @@ export default function InvoiceForm() {
   const grandTotal = subTotal + (isInterState ? igstTotal : cgstTotal + sgstTotal);
   const fmt = (n: number) => "₹ " + n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
 
-  async function downloadPDF() {
-    const el = document.getElementById("gst-invoice-preview");
-    if (!el) return;
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`Invoice-${invoiceNo}.pdf`);
-  }
+
 
   function handlePrint() {
     window.print();
@@ -438,10 +428,7 @@ export default function InvoiceForm() {
               {showPreview ? "Hide" : "Preview Invoice"}
             </Button>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="gap-2 border-[hsl(var(--gold)/0.5)] text-gold hover:bg-[hsl(var(--secondary))]" onClick={downloadPDF}>
-                <Download size={15} /> PDF
-              </Button>
-              <Button variant="outline" className="gap-2 border-green-400 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" onClick={shareWhatsApp}>
+              <Button variant="outline" className="col-span-2 gap-2 border-green-400 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" onClick={shareWhatsApp}>
                 <MessageCircle size={15} /> WhatsApp
               </Button>
             </div>
@@ -452,7 +439,7 @@ export default function InvoiceForm() {
         </div>
       </div>
 
-      <div className={`lg:col-span-5 overflow-x-auto print:block print-only print:m-0 print:p-0 ${showPreview ? "animate-fade-in block" : "absolute -left-[9999px] opacity-0"}`}>
+      <div className={`lg:col-span-5 overflow-x-auto print:block print-only print:m-0 print:p-0 print:opacity-100 print:static ${showPreview ? "animate-fade-in block" : "absolute -left-[9999px] opacity-0"}`}>
         <div className="min-w-[700px]">
           <GSTInvoicePreview items={items} customer={customer} invoiceNo={invoiceNo} date={date} isInterState={isInterState} bankDetails={bankDetails} />
         </div>
