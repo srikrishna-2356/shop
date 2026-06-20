@@ -64,6 +64,7 @@ function InvoicePreview({
   estimateNo,
   date,
   type,
+  bankDetails,
 }: {
   items: LineItem[];
   customer: { name: string; address: string; gstin: string };
